@@ -653,3 +653,568 @@ renderQuestion();
 </script>
 </body>
 </html>
+<!-- NEET syllabus add-on: paste before </body> -->
+<script>
+(() => {
+  "use strict";
+
+  if (document.getElementById("view-syllabus")) return;
+
+  const main = document.querySelector("main");
+  const nav = document.querySelector("nav");
+
+  if (!main || !nav || !document.getElementById("view-home")) {
+    console.error(
+      "Syllabus add-on: expected Local Edition page structure not found."
+    );
+    return;
+  }
+
+  const SOURCE = "https://nmc.org.in/whats-new/download/431";
+  const KEY = "neet-syllabus-progress-v1";
+
+  /*
+   * Unit names follow the NEET UG 2026 syllabus.
+   * Topic strings are concise study-navigation summaries,
+   * not the complete official wording or full study notes.
+   */
+  const DATA = {
+    Physics: [
+      [
+        "Physics and Measurement",
+        "भौतिकी एवं मापन",
+        "Units and SI system; Least count; Significant figures; Measurement errors; Dimensions and dimensional analysis"
+      ],
+      [
+        "Kinematics",
+        "गतिकी",
+        "Reference frame and straight-line motion; Position-time and velocity-time graphs; Uniform acceleration; Scalars and vectors; Vector products and resolution; Relative velocity; Projectile motion; Uniform circular motion"
+      ],
+      [
+        "Laws of Motion",
+        "गति के नियम",
+        "Inertia and Newton's laws; Momentum and impulse; Conservation of linear momentum; Equilibrium of concurrent forces; Static, kinetic and rolling friction; Centripetal force; Level and banked roads"
+      ],
+      [
+        "Work, Energy and Power",
+        "कार्य, ऊर्जा एवं शक्ति",
+        "Work by constant and variable forces; Kinetic and potential energy; Work-energy theorem; Power; Spring energy; Conservation of mechanical energy; Conservative and non-conservative forces; Vertical circular motion; Elastic and inelastic collisions"
+      ],
+      [
+        "Rotational Motion",
+        "घूर्णन गति",
+        "Centre of mass; Torque; Angular momentum and its conservation; Moment of inertia; Radius of gyration; Parallel and perpendicular axes theorems; Rigid-body equilibrium; Rotational equations of motion"
+      ],
+      [
+        "Gravitation",
+        "गुरुत्वाकर्षण",
+        "Universal gravitation; Variation of g with altitude and depth; Kepler's laws; Gravitational potential and energy; Escape velocity; Satellite orbital velocity, period and energy"
+      ],
+      [
+        "Properties of Solids and Liquids",
+        "ठोस एवं द्रव के गुण",
+        "Elasticity and stress-strain; Hooke's law and elastic moduli; Fluid pressure and Pascal's law; Viscosity and Stokes' law; Terminal velocity; Streamline and turbulent flow; Bernoulli principle; Surface tension and capillarity; Thermal expansion; Calorimetry and latent heat; Conduction, convection and radiation"
+      ],
+      [
+        "Thermodynamics",
+        "ऊष्मागतिकी",
+        "Thermal equilibrium and zeroth law; Heat, work and internal energy; First law; Isothermal and adiabatic processes; Second law; Reversible and irreversible processes"
+      ],
+      [
+        "Kinetic Theory of Gases",
+        "गैसों का अणुगति सिद्धांत",
+        "Ideal gas equation; Work in gas compression; Kinetic theory assumptions; Pressure and temperature interpretation; RMS speed; Degrees of freedom; Equipartition and specific heats; Mean free path; Avogadro number"
+      ],
+      [
+        "Oscillations and Waves",
+        "दोलन एवं तरंगें",
+        "Periodic motion and phase; Simple harmonic motion; Spring oscillations; SHM energy; Simple pendulum; Longitudinal and transverse waves; Progressive waves; Superposition and reflection; Standing waves in strings and pipes; Harmonics; Beats"
+      ],
+      [
+        "Electrostatics",
+        "स्थिर वैद्युतिकी",
+        "Charge conservation; Coulomb's law and superposition; Electric field and dipoles; Electric flux and Gauss's law; Fields of wire, sheet and shell; Potential and potential energy; Equipotential surfaces; Conductors and dielectrics; Capacitors and combinations; Stored energy"
+      ],
+      [
+        "Current Electricity",
+        "विद्युत धारा",
+        "Current, drift velocity and mobility; Ohm's law; Resistance and V-I characteristics; Resistivity and conductivity; Electrical power; Resistor combinations; Temperature dependence; Cells and internal resistance; Kirchhoff's laws; Wheatstone bridge; Metre bridge"
+      ],
+      [
+        "Magnetic Effects of Current and Magnetism",
+        "धारा के चुंबकीय प्रभाव एवं चुंबकत्व",
+        "Biot-Savart law; Ampere's law; Fields of wire, loop and solenoid; Force on charges and conductors; Parallel currents; Torque on current loop; Moving-coil galvanometer and conversions; Magnetic dipoles; Bar magnets; Diamagnetic, paramagnetic and ferromagnetic materials"
+      ],
+      [
+        "Electromagnetic Induction and Alternating Currents",
+        "वैद्युतचुंबकीय प्रेरण एवं प्रत्यावर्ती धारा",
+        "Faraday's and Lenz's laws; Induced emf; Eddy currents; Self and mutual inductance; AC peak and RMS values; Reactance and impedance; Series LCR circuit; Resonance; AC power and wattless current; AC generator; Transformer"
+      ],
+      [
+        "Electromagnetic Waves",
+        "वैद्युतचुंबकीय तरंगें",
+        "Displacement current; Electromagnetic wave characteristics; Transverse nature; Electromagnetic spectrum; Applications of radio, microwave, infrared, visible, ultraviolet, X-ray and gamma radiation"
+      ],
+      [
+        "Optics",
+        "प्रकाशिकी",
+        "Reflection and spherical mirrors; Refraction at plane and spherical surfaces; Lenses and lens maker formula; Total internal reflection; Lens power and combinations; Prism; Microscope and telescope; Huygens principle; Interference and Young's experiment; Single-slit diffraction; Polarization and Brewster's law"
+      ],
+      [
+        "Dual Nature of Matter and Radiation",
+        "पदार्थ एवं विकिरण की द्वैत प्रकृति",
+        "Photoelectric effect; Hertz and Lenard observations; Einstein photoelectric equation; Photon picture; Matter waves; de Broglie relation"
+      ],
+      [
+        "Atoms and Nuclei",
+        "परमाणु एवं नाभिक",
+        "Alpha scattering; Rutherford model; Bohr model; Hydrogen spectrum and energy levels; Nuclear composition and size; Atomic masses; Mass-energy relation; Mass defect; Binding energy; Fission and fusion"
+      ],
+      [
+        "Electronic Devices",
+        "इलेक्ट्रॉनिक युक्तियाँ",
+        "Semiconductors; Diode forward and reverse characteristics; Rectifier; LED; Photodiode; Solar cell; Zener diode and voltage regulation; OR, AND, NOT, NAND and NOR gates"
+      ],
+      [
+        "Experimental Skills",
+        "प्रायोगिक कौशल",
+        "Vernier calipers; Screw gauge; Pendulum energy dissipation; Principle of moments; Young's modulus experiment; Capillary surface tension; Viscosity by terminal speed; Resonance tube; Specific heat by mixtures; Resistivity by metre bridge; Ohm's law experiment; Galvanometer half-deflection method; Mirror and lens focal lengths by parallax; Prism deviation graph; Travelling microscope; Diode and Zener curves; Identification of electronic components"
+      ]
+    ],
+
+    Chemistry: [
+      [
+        "Some Basic Concepts in Chemistry",
+        "रसायन विज्ञान की मूल अवधारणाएँ",
+        "Matter and Dalton's theory; Atoms, molecules, elements and compounds; Laws of chemical combination; Atomic and molecular masses; Mole concept; Molar mass; Percentage composition; Empirical and molecular formulae; Stoichiometry"
+      ],
+      [
+        "Atomic Structure",
+        "परमाणु संरचना",
+        "Electromagnetic radiation and photoelectric effect; Hydrogen spectrum; Bohr model and limitations; de Broglie relation; Uncertainty principle; Quantum mechanical model; Orbitals and quantum numbers; Orbital shapes; Electron spin; Aufbau, Pauli and Hund rules; Electronic configurations"
+      ],
+      [
+        "Chemical Bonding and Molecular Structure",
+        "रासायनिक बंधन एवं आणविक संरचना",
+        "Kossel-Lewis approach; Ionic and covalent bonds; Lattice enthalpy; Electronegativity; Fajan's rule; Dipole moment; VSEPR shapes; Valence bond theory; Hybridization; Resonance; Molecular orbital theory; Bond order; Metallic bonding; Hydrogen bonding"
+      ],
+      [
+        "Chemical Thermodynamics",
+        "रासायनिक ऊष्मागतिकी",
+        "System and surroundings; State functions; Intensive and extensive properties; Heat, work, internal energy and enthalpy; Heat capacity; Hess's law; Types of enthalpy changes; Entropy; Spontaneity; Gibbs energy; Equilibrium constant"
+      ],
+      [
+        "Solutions",
+        "विलयन",
+        "Concentration units; Vapour pressure; Raoult's law; Ideal and non-ideal solutions; Vapour pressure-composition plots; Colligative properties; Molecular mass determination; Abnormal molar mass; van't Hoff factor"
+      ],
+      [
+        "Equilibrium",
+        "साम्यावस्था",
+        "Dynamic equilibrium; Physical equilibria and Henry's law; Chemical equilibrium and Kp/Kc; Gibbs energy; Le Chatelier principle; Acids and bases; Ionization constants; Water ionization and pH; Common ion effect; Salt hydrolysis; Solubility product; Buffers"
+      ],
+      [
+        "Redox Reactions and Electrochemistry",
+        "रेडॉक्स अभिक्रियाएँ एवं वैद्युतरसायन",
+        "Oxidation and reduction; Oxidation numbers; Redox balancing; Conductance and molar conductivity; Kohlrausch's law; Electrolytic and galvanic cells; Electrode potentials; Cell emf; Nernst equation; Gibbs energy relation; Dry cell; Lead accumulator; Fuel cells"
+      ],
+      [
+        "Chemical Kinetics",
+        "रासायनिक बलगतिकी",
+        "Reaction rate and influencing factors; Elementary and complex reactions; Order and molecularity; Rate law and rate constant; Zero- and first-order equations; Half-life; Arrhenius equation; Activation energy; Collision theory"
+      ],
+      [
+        "Classification of Elements and Periodicity in Properties",
+        "तत्वों का वर्गीकरण एवं आवर्तिता",
+        "Modern periodic law; Periodic table and blocks; Atomic and ionic radii; Ionization enthalpy; Electron gain enthalpy; Valence; Oxidation states; Chemical reactivity trends"
+      ],
+      [
+        "p-Block Elements",
+        "p-ब्लॉक तत्व",
+        "Groups 13 to 18; Electronic configurations; General physical and chemical trends across periods and down groups; Unique behaviour of the first element of each group"
+      ],
+      [
+        "d- and f-Block Elements",
+        "d एवं f-ब्लॉक तत्व",
+        "Transition elements and configurations; First-row trends; Oxidation states; Colour and magnetism; Catalytic behaviour; Complexes; Interstitial compounds; Alloys; Potassium dichromate and permanganate; Lanthanoids and contraction; Actinoids"
+      ],
+      [
+        "Coordination Compounds",
+        "उपसहसंयोजन यौगिक",
+        "Werner's theory; Ligands; Coordination number; Denticity and chelation; IUPAC nomenclature; Isomerism; Valence bond and crystal field ideas; Colour and magnetic properties; Analytical, metallurgical and biological importance"
+      ],
+      [
+        "Purification and Characterisation of Organic Compounds",
+        "कार्बनिक यौगिकों का शोधन एवं अभिलक्षण",
+        "Crystallization; Sublimation; Distillation; Differential extraction; Chromatography; Element detection; Basic quantitative analysis; Empirical and molecular formula calculations"
+      ],
+      [
+        "Some Basic Principles of Organic Chemistry",
+        "कार्बनिक रसायन के मूल सिद्धांत",
+        "Carbon tetravalency and hybridization; Functional groups; Homologous series; Structural and stereoisomerism; Nomenclature; Bond fission; Radicals, carbocations and carbanions; Electrophiles and nucleophiles; Inductive and electromeric effects; Resonance; Hyperconjugation; Substitution, addition, elimination and rearrangement"
+      ],
+      [
+        "Hydrocarbons",
+        "हाइड्रोकार्बन",
+        "Classification and nomenclature; Preparations and reactions; Ethane conformations; Alkane halogenation; Alkene geometrical isomerism and electrophilic addition; Markovnikov rule and peroxide effect; Ozonolysis; Polymerization; Alkyne acidity; Benzene aromaticity; Electrophilic substitution; Friedel-Crafts reactions; Directing effects"
+      ],
+      [
+        "Organic Compounds Containing Halogens",
+        "हैलोजन युक्त कार्बनिक यौगिक",
+        "Preparation, properties and reactions; Carbon-halogen bond; Substitution mechanisms; Uses and environmental effects of chloroform, iodoform, freons and DDT"
+      ],
+      [
+        "Organic Compounds Containing Oxygen",
+        "ऑक्सीजन युक्त कार्बनिक यौगिक",
+        "Alcohols, phenols and ethers; Alcohol identification and dehydration; Phenol acidity and substitution; Reimer-Tiemann reaction; Carbonyl compounds; Nucleophilic addition; Grignard reactions; Oxidation and reduction; Wolff-Kishner and Clemmensen reductions; Aldol, Cannizzaro and haloform reactions; Distinguishing tests; Carboxylic acid strength"
+      ],
+      [
+        "Organic Compounds Containing Nitrogen",
+        "नाइट्रोजन युक्त कार्बनिक यौगिक",
+        "Preparation, properties and reactions; Amine nomenclature and classification; Structure and basicity; Identification of primary, secondary and tertiary amines; Diazonium salts and synthetic uses"
+      ],
+      [
+        "Biomolecules",
+        "जैव अणु",
+        "Carbohydrates; Glucose and fructose; Sucrose, lactose and maltose; Amino acids and peptide bonds; Protein structures and denaturation; Enzymes; Vitamins; DNA and RNA constitution and functions; Hormone introduction"
+      ],
+      [
+        "Principles Related to Practical Chemistry",
+        "प्रायोगिक रसायन के सिद्धांत",
+        "Extra-element and functional-group detection; Preparation of listed inorganic and organic compounds; Acid-base and permanganate titrations; Qualitative salt analysis with official specified ions; Enthalpy of solution and neutralization; Lyophilic and lyophobic sols; Iodide-hydrogen peroxide kinetics"
+      ]
+    ],
+
+    Biology: [
+      [
+        "Diversity in Living World",
+        "जीव जगत में विविधता",
+        "Living characteristics and biodiversity; Taxonomy and systematics; Species and hierarchy; Binomial nomenclature; Five kingdoms; Monera, Protista and Fungi; Lichens, viruses and viroids; Algae, bryophytes, pteridophytes and gymnosperms; Animal classification"
+      ],
+      [
+        "Structural Organisation in Animals and Plants",
+        "पादपों एवं प्राणियों का संरचनात्मक संगठन",
+        "Plant morphology and modifications; Plant tissues and anatomy; Root, stem and leaf; Inflorescence, flower, fruit and seed; Specified plant families; Animal tissues; Frog morphology, anatomy and organ systems — consult official wording and clarifications"
+      ],
+      [
+        "Cell Structure and Function",
+        "कोशिका संरचना एवं कार्य",
+        "Cell theory; Prokaryotic and eukaryotic cells; Plant and animal cells; Cell membrane and wall; Organelles and endomembrane system; Cytoskeleton, cilia and flagella; Nucleus; Biomolecules; Enzymes and classification; Cell cycle; Mitosis and meiosis"
+      ],
+      [
+        "Plant Physiology",
+        "पादप कार्यिकी",
+        "Photosynthesis and pigments; Light and biosynthetic phases; Photophosphorylation; Chemiosmosis; Photorespiration; C3 and C4 pathways; Respiration, glycolysis, fermentation and TCA cycle; Electron transport; Respiratory quotient; Plant growth, differentiation and growth regulators"
+      ],
+      [
+        "Human Physiology",
+        "मानव कार्यिकी",
+        "Breathing and gas exchange; Respiratory volumes and disorders; Blood, lymph and circulation; Heart, cardiac cycle and ECG; Excretion, nephron and urine formation; Osmoregulation and kidney disorders; Locomotion and muscle contraction; Skeleton and joints; Neural control and nerve impulses; Endocrine glands, hormones and disorders"
+      ],
+      [
+        "Reproduction",
+        "जनन",
+        "Sexual reproduction in flowering plants; Gametophytes; Pollination and pollen-pistil interaction; Double fertilization; Seed, embryo and fruit development; Apomixis and polyembryony; Human reproductive systems; Gametogenesis; Menstrual cycle; Fertilization and implantation; Pregnancy, parturition and lactation; Reproductive health; Contraception; STDs; Infertility and assisted reproduction"
+      ],
+      [
+        "Genetics and Evolution",
+        "आनुवंशिकी एवं विकास",
+        "Mendelian inheritance and deviations; Blood groups; Pleiotropy and polygenic inheritance; Chromosomal theory; Sex determination; Linkage and crossing over; Genetic disorders; DNA and RNA; Replication; Transcription and translation; Genetic code; Lac operon; Human genome project; DNA fingerprinting; Evolution evidence and mechanisms; Natural selection; Genetic drift and gene flow; Hardy-Weinberg principle"
+      ],
+      [
+        "Biology and Human Welfare",
+        "जीव विज्ञान एवं मानव कल्याण",
+        "Human health and diseases; Pathogens and parasites; Immunity; Cancer and HIV/AIDS; Adolescence and substance abuse; Microbes in food and industrial production; Sewage treatment; Biogas; Biocontrol agents; Biofertilizers"
+      ],
+      [
+        "Biotechnology and Its Applications",
+        "जैव प्रौद्योगिकी एवं अनुप्रयोग",
+        "Biotechnology principles and processes; Genetic engineering; Applications in health and agriculture; Insulin and vaccines; Gene therapy; Genetically modified crops; Bt crops; Transgenic animals; Biosafety; Biopiracy and patents"
+      ],
+      [
+        "Ecology and Environment",
+        "पारिस्थितिकी एवं पर्यावरण",
+        "Organisms and environment; Population interactions; Population attributes and growth; Ecosystem components and patterns; Productivity and decomposition; Energy flow; Ecological pyramids; Biodiversity patterns and importance; Biodiversity loss; Conservation; Hotspots and protected areas"
+      ]
+    ]
+  };
+
+  let progress = {};
+  let storageError = "";
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+    if (saved && typeof saved === "object" && !Array.isArray(saved)) {
+      for (const [key, value] of Object.entries(saved)) {
+        if (value === true) progress[key] = true;
+      }
+    }
+  } catch {
+    storageError = "Progress storage unavailable or unreadable.";
+  }
+
+  const style = document.createElement("style");
+  style.textContent = `
+    #view-syllabus summary {
+      cursor:pointer; padding:12px 0; font-weight:600;
+    }
+    #view-syllabus .sy-unit {
+      border-top:1px solid #cbd5e1; padding:8px 0;
+    }
+    #view-syllabus .sy-topic {
+      display:flex; align-items:flex-start; gap:10px;
+      margin:0; padding:10px 0; font-weight:400;
+      overflow-wrap:anywhere;
+    }
+    #view-syllabus .sy-topic input {
+      width:20px; height:20px; flex-shrink:0; margin-top:3px;
+    }
+    #view-syllabus .sy-controls {
+      display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;
+    }
+    #view-syllabus input[type=search] {
+      width:100%; padding:12px; font:inherit;
+      border:1px solid #94a3b8; border-radius:8px;
+    }
+    #view-syllabus .sy-small {
+      font-size:14px; color:#475569; line-height:1.6;
+    }
+    #sy-open-button {
+      position:fixed; right:12px;
+      bottom:calc(82px + env(safe-area-inset-bottom));
+      z-index:30; padding:12px 16px;
+      background:#1d4ed8; color:white;
+      border:0; border-radius:24px;
+      box-shadow:0 3px 12px #0003;
+    }
+  `;
+  document.head.append(style);
+
+  function element(tag, text, className) {
+    const node = document.createElement(tag);
+    if (text !== undefined) node.textContent = text;
+    if (className) node.className = className;
+    return node;
+  }
+
+  const section = element("section");
+  section.id = "view-syllabus";
+  section.hidden = true;
+
+  const headingCard = element("div", undefined, "card");
+  headingCard.append(
+    element("h2", "NEET Syllabus / पाठ्यक्रम"),
+    element(
+      "p",
+      "NEET UG 2026 baseline for preparation. Official 2027 status " +
+      "इस add-on में verify नहीं किया गया है।",
+      "sy-small"
+    ),
+    element(
+      "p",
+      "50 official unit headings. नीचे मुख्य topics के summaries हैं, " +
+      "पूरे official syllabus का शब्दशः text या full notes नहीं।",
+      "sy-small"
+    )
+  );
+
+  const sourceLink = element("a", "Official NMC syllabus खोलें");
+  sourceLink.href = SOURCE;
+  sourceLink.target = "_blank";
+  sourceLink.rel = "noopener";
+  headingCard.append(sourceLink);
+
+  const warning = element(
+    "p",
+    "Verified PYQs included: 0. Full notes included: 0. " +
+    "इस add-on में MCQs या PYQs होने का दावा नहीं किया गया है।",
+    "sy-small"
+  );
+  headingCard.append(warning);
+
+  const count = element("p");
+  count.setAttribute("role", "status");
+  headingCard.append(count);
+
+  const storageMessage = element("p", storageError, "sy-small");
+  storageMessage.setAttribute("role", "status");
+  headingCard.append(storageMessage);
+
+  const searchLabel = element("label", "Unit या topic खोजें");
+  searchLabel.htmlFor = "sy-search";
+  const search = element("input");
+  search.id = "sy-search";
+  search.type = "search";
+  search.placeholder = "जैसे: Genetics, Optics, प्रकाशिकी";
+  headingCard.append(searchLabel, search);
+
+  const controls = element("div", undefined, "sy-controls");
+  const back = element("button", "Back to Home");
+  back.type = "button";
+  const exportButton = element("button", "Export progress");
+  exportButton.type = "button";
+  controls.append(back, exportButton);
+  headingCard.append(controls);
+
+  section.append(headingCard);
+  const list = element("div");
+  section.append(list);
+  main.append(section);
+
+  const openButton = element("button", "Syllabus");
+  openButton.type = "button";
+  openButton.id = "sy-open-button";
+  openButton.setAttribute("aria-controls", "view-syllabus");
+  openButton.setAttribute("aria-expanded", "false");
+  document.body.append(openButton);
+
+  const validIds = [];
+  for (const [subject, units] of Object.entries(DATA)) {
+    units.forEach((unit, unitIndex) => {
+      unit[2].split(";").forEach((topic, topicIndex) => {
+        validIds.push(subject + "-" + unitIndex + "-" + topicIndex);
+      });
+    });
+  }
+
+  function updateCount() {
+    const done = validIds.filter(id => progress[id] === true).length;
+    count.textContent =
+      "Checklist progress: " + done + " / " + validIds.length +
+      " topic groups complete. " +
+      "ये topic groups हैं, official individual points की count नहीं।";
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(progress));
+      storageMessage.textContent = "Progress saved in this browser.";
+    } catch {
+      storageMessage.textContent =
+        "Progress save नहीं हुआ। Export progress करके copy रखें।";
+    }
+    updateCount();
+  }
+
+  function render() {
+    const query = search.value.trim().toLowerCase();
+    list.replaceChildren();
+    let matchedUnits = 0;
+
+    for (const [subject, units] of Object.entries(DATA)) {
+      const card = element("div", undefined, "card");
+      card.append(element("h3", subject));
+      let visible = 0;
+
+      units.forEach((unit, unitIndex) => {
+        const [english, hindi, topicString] = unit;
+        const topics = topicString.split(";").map(t => t.trim());
+        const searchable =
+          [subject, english, hindi, topicString].join(" ").toLowerCase();
+
+        if (query && !searchable.includes(query)) return;
+
+        visible++;
+        matchedUnits++;
+
+        const details = element("details", undefined, "sy-unit");
+        details.open = Boolean(query);
+
+        details.append(
+          element(
+            "summary",
+            "Unit " + (unitIndex + 1) + ": " +
+            english + " / " + hindi
+          )
+        );
+
+        topics.forEach((topic, topicIndex) => {
+          const id = subject + "-" + unitIndex + "-" + topicIndex;
+          const label = element("label", undefined, "sy-topic");
+          const checkbox = element("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = progress[id] === true;
+
+          checkbox.addEventListener("change", () => {
+            if (checkbox.checked) progress[id] = true;
+            else delete progress[id];
+            save();
+          });
+
+          label.append(checkbox, element("span", topic));
+          details.append(label);
+        });
+
+        card.append(details);
+      });
+
+      if (visible) list.append(card);
+    }
+
+    if (!matchedUnits) {
+      list.append(element("p", "कोई matching unit नहीं मिली।", "card"));
+    }
+    updateCount();
+  }
+
+  function showSyllabus() {
+    for (const child of main.children) {
+      if (child.tagName === "SECTION") child.hidden = true;
+    }
+    section.hidden = false;
+    section.style.display = "block";
+
+    nav.querySelectorAll("[data-view]").forEach(button => {
+      button.removeAttribute("aria-current");
+    });
+
+    openButton.setAttribute("aria-expanded", "true");
+    window.scrollTo({ top: 0 });
+  }
+
+  openButton.addEventListener("click", showSyllabus);
+
+  nav.addEventListener("click", event => {
+    if (!event.target.closest("[data-view]")) return;
+    section.hidden = true;
+    openButton.setAttribute("aria-expanded", "false");
+  });
+
+  back.addEventListener("click", () => {
+    section.hidden = true;
+    openButton.setAttribute("aria-expanded", "false");
+
+    const homeButton = nav.querySelector('[data-view="home"]');
+    if (homeButton) homeButton.click();
+    else document.getElementById("view-home").hidden = false;
+  });
+
+  search.addEventListener("input", render);
+
+  exportButton.addEventListener("click", () => {
+    const payload = {
+      version: 1,
+      baseline: "NEET UG 2026",
+      kind: "syllabus-progress-only",
+      exportedAt: new Date().toISOString(),
+      progress
+    };
+
+    const blob = new Blob(
+      [JSON.stringify(payload, null, 2)],
+      { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "neet-syllabus-progress.json";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  });
+
+  render();
+})();
+</script>
