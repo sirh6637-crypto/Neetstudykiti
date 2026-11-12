@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1d4ed8">
+<title>NEET Study Companion — Local Edition</title>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f1f5f9;
+  --card:#fff;
+  --text:#0f172a;
+  --muted:#475569;
+  --line:#cbd5e1;
+  --blue:#1d4ed8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,sans-serif;
+  padding-bottom:100px;
+}
+header{
+  background:var(--blue);
+  color:white;
+  padding:22px 16px;
+}
+header h1{font-size:22px;margin:0 0 8px}
+header p{margin:0;font-size:14px}
+main{max-width:800px;margin:auto;padding:16px}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:16px;
+}
+h2{font-size:21px;margin-top:0}
+h3{font-size:17px}
+p{line-height:1.6}
+.muted{color:var(--muted);font-size:14px}
+label{display:block;margin:12px 0 6px}
+input,textarea,select,button{
+  font:inherit;
+}
+input[type=text],textarea,select{
+  width:100%;
+  background:white;
+  border:1px solid #94a3b8;
+  border-radius:8px;
+  padding:12px;
+}
+textarea{min-height:220px;resize:vertical}
+button{
+  border:1px solid #94a3b8;
+  border-radius:8px;
+  padding:11px 14px;
+  background:white;
+  color:var(--text);
+  cursor:pointer;
+}
+button.primary{
+  background:var(--blue);
+  color:white;
+  border-color:var(--blue);
+}
+button:disabled{opacity:.65;cursor:default}
+button:focus-visible,a:focus-visible,input:focus-visible,
+textarea:focus-visible,select:focus-visible{
+  outline:3px solid #f59e0b;
+  outline-offset:3px;
+}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:white;
+  border-top:1px solid var(--line);
+  display:flex;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+nav button{
+  flex:1;
+  min-width:0;
+  border:0;
+  border-radius:0;
+  font-size:12px;
+  padding:17px 2px;
+}
+nav button[aria-current=page]{
+  background:#dbeafe;
+  color:var(--blue);
+  font-weight:700;
+}
+[hidden]{display:none!important}
+.task{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 0;
+  border-bottom:1px solid var(--line);
+}
+.task label{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:1;
+  margin:0;
+  overflow-wrap:anywhere;
+}
+.task input{width:21px;height:21px;flex-shrink:0}
+.done{text-decoration:line-through;color:var(--muted)}
+#answers{display:grid;gap:10px}
+#answers button{text-align:left;overflow-wrap:anywhere}
+#question-text,#answer-feedback{white-space:pre-wrap}
+#notice{
+  position:sticky;
+  top:0;
+  background:#fef3c7;
+  color:#713f12;
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:12px;
+}
+code{
+  background:#e2e8f0;
+  border-radius:4px;
+  padding:2px 4px;
+}
+</style>
+</head>
+
+<body>
+<header>
+  <h1>NEET Study Companion</h1>
+  <p>Local Edition — आपका data इसी browser में रहता है</p>
+</header>
+
+<main>
+  <p id="notice" role="status" hidden></p>
+
+  <section id="view-home">
+    <div class="card">
+      <h2>आज की पढ़ाई</h2>
+      <p id="progress">Tasks load हो रहे हैं…</p>
+
+      <form id="task-form">
+        <label for="task-input">नया study task</label>
+        <input id="task-input" type="text" maxlength="200"
+          placeholder="जैसे: Physics chapter revision" required>
+        <div class="actions">
+          <button class="primary" type="submit">Add task</button>
+        </div>
+      </form>
+
+      <div id="task-list"></div>
+    </div>
+
+    <div class="card">
+      <h2>इस version में क्या है?</h2>
+      <p>Tasks, Notes, PDF खोलना, question bank practice और backup.</p>
+      <p class="muted">
+        कोई verified PYQ bank पहले से नहीं जोड़ा गया है।
+        AI, OCR, cloud sync और push notifications उपलब्ध नहीं हैं।
+        यह official NTA app नहीं है।
+      </p>
+    </div>
+  </section>
+
+  <section id="view-practice" hidden>
+    <div class="card">
+      <h2>Practice</h2>
+      <p id="bank-status"></p>
+
+      <label for="question-file">Question bank JSON चुनें</label>
+      <input id="question-file" type="file"
+        accept=".json,application/json">
+
+      <details>
+        <summary>JSON format देखें</summary>
+        <p class="muted">
+          हर question में question, options, answerIndex और
+          explanation चाहिए। answerIndex में 0 पहला option है।
+          Demo question verified PYQ नहीं है।
+        </p>
+        <button id="download-format" type="button">
+          Demo JSON download
+        </button>
+      </details>
+    </div>
+
+    <div id="quiz-card" class="card" hidden>
+      <p id="question-number" class="muted"></p>
+      <h3 id="question-text"></h3>
+      <div id="answers"></div>
+      <p id="answer-feedback" role="status"></p>
+      <button id="next-question" type="button">Next question</button>
+    </div>
+  </section>
+
+  <section id="view-papers" hidden>
+    <div class="card">
+      <h2>Question Papers / PDFs</h2>
+      <p>
+        अपने phone से PDF चुनें। PDF किसी server पर upload नहीं होगी।
+        यह feature PDF से questions extract या OCR नहीं करता।
+      </p>
+
+      <label for="pdf-file">PDF चुनें</label>
+      <input id="pdf-file" type="file" accept=".pdf,application/pdf">
+      <p id="pdf-name" class="muted">कोई PDF नहीं चुनी गई।</p>
+      <a id="pdf-link" target="_blank" rel="noopener" hidden>
+        Selected PDF खोलें
+      </a>
+
+      <p class="muted">
+        PDF इस session के लिए उपलब्ध है। Page reload करने पर
+        उसे दोबारा चुनना होगा।
+      </p>
+    </div>
+  </section>
+
+  <section id="view-notes" hidden>
+    <div class="card">
+      <h2>My Notes</h2>
+      <label for="note-input">Notes लिखें</label>
+      <textarea id="note-input" maxlength="200000"
+        placeholder="अपने notes यहाँ लिखें…"></textarea>
+      <div class="actions">
+        <button id="save-notes" class="primary" type="button">
+          Save notes
+        </button>
+        <button id="download-notes" type="button">
+          Download text
+        </button>
+      </div>
+      <p id="notes-status" role="status"></p>
+      <p class="muted">
+        Browser data हटाने या दूसरा phone/browser इस्तेमाल करने पर
+        notes अपने आप नहीं आएँगे। Backup रखें।
+      </p>
+    </div>
+  </section>
+
+  <section id="view-backup" hidden>
+    <div class="card">
+      <h2>Backup / Restore</h2>
+      <p>
+        Backup में saved tasks, saved notes और imported question bank
+        होंगे। चुनी गई PDF शामिल नहीं होगी।
+      </p>
+
+      <button id="export-backup" class="primary" type="button">
+        Download backup
+      </button>
+
+      <label for="backup-file">Backup JSON restore करें</label>
+      <input id="backup-file" type="file"
+        accept=".json,application/json">
+
+      <p class="muted">
+        Restore करने पर current saved data replace होगा।
+        पहले अपना backup download करें।
+        Password या API keys इस app में न लिखें।
+      </p>
+    </div>
+  </section>
+</main>
+
+<nav aria-label="Main navigation">
+  <button type="button" data-view="home" aria-current="page">Home</button>
+  <button type="button" data-view="practice">Practice</button>
+  <button type="button" data-view="papers">PDFs</button>
+  <button type="button" data-view="notes">Notes</button>
+  <button type="button" data-view="backup">Backup</button>
+</nav>
+
+<script>
+"use strict";
+
+const STORAGE_KEY = "neet-study-local-v1";
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const views = ["home", "practice", "papers", "notes", "backup"];
+const $ = id => document.getElementById(id);
+
+let state = { version: 1, tasks: [], notes: "", questions: [] };
+let questionIndex = 0;
+let answered = false;
+let pdfUrl = null;
+
+function notify(message) {
+  $("notice").textContent = message;
+  $("notice").hidden = false;
+}
+
+function validateQuestions(value) {
+  if (!Array.isArray(value) || value.length > 2000) {
+    throw new Error("Question bank में अधिकतम 2000 questions रखें।");
+  }
+
+  return value.map((q, i) => {
+    if (
+      !q || typeof q !== "object" ||
+      typeof q.question !== "string" ||
+      !q.question.trim() || q.question.length > 10000 ||
+      !Array.isArray(q.options) ||
+      q.options.length < 2 || q.options.length > 6 ||
+      !q.options.every(o =>
+        typeof o === "string" && o.trim() && o.length <= 5000
+      ) ||
+      !Number.isInteger(q.answerIndex) ||
+      q.answerIndex < 0 || q.answerIndex >= q.options.length ||
+      (q.explanation !== undefined &&
+        (typeof q.explanation !== "string" ||
+         q.explanation.length > 20000))
+    ) {
+      throw new Error("Question " + (i + 1) + " का format गलत है।");
+    }
+
+    return {
+      question: q.question.trim(),
+      options: q.options.map(o => o.trim()),
+      answerIndex: q.answerIndex,
+      explanation: q.explanation || ""
+    };
+  });
+}
+
+function validateState(value) {
+  if (!value || value.version !== 1 ||
+      !Array.isArray(value.tasks) || value.tasks.length > 1000 ||
+      typeof value.notes !== "string" ||
+      value.notes.length > 200000) {
+    throw new Error("Backup format सही नहीं है।");
+  }
+
+  const tasks = value.tasks.map(t => {
+    if (!t || typeof t.text !== "string" ||
+        !t.text.trim() || t.text.length > 200 ||
+        typeof t.done !== "boolean") {
+      throw new Error("Backup में task format गलत है।");
+    }
+    return { text: t.text, done: t.done };
+  });
+
+  return {
+    version: 1,
+    tasks,
+    notes: value.notes,
+    questions: validateQuestions(value.questions)
+  };
+}
+
+function persist() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return true;
+  } catch {
+    notify(
+      "Browser में save नहीं हो पाया। अभी Download backup करें; " +
+      "reload करने पर unsaved changes खो सकते हैं।"
+    );
+    return false;
+  }
+}
+
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) state = validateState(JSON.parse(saved));
+} catch {
+  notify(
+    "Saved data load नहीं हुआ या storage unavailable है। " +
+    "नया data save करने से पहले पुराना backup रखें।"
+  );
+}
+
+document.querySelectorAll("[data-view]").forEach(button => {
+  button.addEventListener("click", () => {
+    const selected = button.dataset.view;
+
+    views.forEach(view => {
+      $("view-" + view).hidden = view !== selected;
+    });
+
+    document.querySelectorAll("[data-view]").forEach(item => {
+      if (item === button) item.setAttribute("aria-current", "page");
+      else item.removeAttribute("aria-current");
+    });
+  });
+});
+
+function renderTasks() {
+  const completed = state.tasks.filter(t => t.done).length;
+  $("progress").textContent =
+    completed + " / " + state.tasks.length + " tasks complete";
+
+  const list = $("task-list");
+  list.replaceChildren();
+
+  if (!state.tasks.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "अभी कोई task नहीं है। ऊपर से जोड़ें।";
+    list.append(empty);
+    return;
+  }
+
+  state.tasks.forEach((task, index) => {
+    const row = document.createElement("div");
+    row.className = "task";
+
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = task.done;
+
+    const text = document.createElement("span");
+    text.textContent = task.text;
+    if (task.done) text.className = "done";
+
+    checkbox.addEventListener("change", () => {
+      state.tasks[index].done = checkbox.checked;
+      persist();
+      renderTasks();
+    });
+
+    label.append(checkbox, text);
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "Delete";
+    remove.setAttribute("aria-label", "Delete task: " + task.text);
+    remove.addEventListener("click", () => {
+      if (!confirm("यह task delete करें?")) return;
+      state.tasks.splice(index, 1);
+      persist();
+      renderTasks();
+    });
+
+    row.append(label, remove);
+    list.append(row);
+  });
+}
+
+$("task-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const text = $("task-input").value.trim();
+  if (!text) return;
+  if (state.tasks.length >= 1000) {
+    notify("Task limit पूरी हो गई है। पुराने tasks हटाएँ।");
+    return;
+  }
+  state.tasks.push({ text, done: false });
+  persist();
+  $("task-input").value = "";
+  renderTasks();
+});
+
+$("note-input").value = state.notes;
+
+$("note-input").addEventListener("input", () => {
+  $("notes-status").textContent = "Changes अभी save नहीं हुए।";
+});
+
+$("save-notes").addEventListener("click", () => {
+  state.notes = $("note-input").value;
+  $("notes-status").textContent = persist()
+    ? "Notes इस browser में save हो गए।"
+    : "Save नहीं हुए। Download text या backup करें।";
+});
+
+function downloadFile(name, content, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
+$("download-notes").addEventListener("click", () => {
+  downloadFile(
+    "neet-notes.txt",
+    $("note-input").value,
+    "text/plain;charset=utf-8"
+  );
+});
+
+async function readJson(file) {
+  if (file.size > MAX_FILE_BYTES) {
+    throw new Error("JSON file 5 MB से छोटी रखें।");
+  }
+  return JSON.parse(await file.text());
+}
+
+function renderQuestion() {
+  const total = state.questions.length;
+  $("bank-status").textContent = total
+    ? total + " questions loaded. इनकी accuracy खुद verify करें।"
+    : "अभी question bank नहीं है। अपना JSON import करें।";
+
+  $("quiz-card").hidden = total === 0;
+  if (!total) return;
+
+  questionIndex = questionIndex % total;
+  answered = false;
+  const q = state.questions[questionIndex];
+
+  $("question-number").textContent =
+    "Question " + (questionIndex + 1) + " / " + total;
+  $("question-text").textContent = q.question;
+  $("answer-feedback").textContent = "";
+  $("answers").replaceChildren();
+
+  q.options.forEach((option, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = String.fromCharCode(65 + index) + ". " + option;
+
+    button.addEventListener("click", () => {
+      if (answered) return;
+      answered = true;
+
+      $("answers").querySelectorAll("button").forEach(b => {
+        b.disabled = true;
+      });
+
+      $("answer-feedback").textContent =
+        (index === q.answerIndex ? "Correct." : "Incorrect.") +
+        "\nसही उत्तर: " + q.options[q.answerIndex] +
+        (q.explanation ? "\n\n" + q.explanation : "");
+    });
+
+    $("answers").append(button);
+  });
+}
+
+$("next-question").addEventListener("click", () => {
+  if (!state.questions.length) return;
+  questionIndex = (questionIndex + 1) % state.questions.length;
+  renderQuestion();
+});
+
+$("question-file").addEventListener("change", async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    const questions = validateQuestions(await readJson(file));
+    if (!questions.length) throw new Error("Question bank खाली है।");
+    if (!confirm("Current question bank replace करें?")) return;
+
+    state.questions = questions;
+    questionIndex = 0;
+    persist();
+    renderQuestion();
+    notify("Question bank loaded. यह verified PYQ import नहीं है।");
+  } catch (error) {
+    notify("Import failed: " + error.message);
+  } finally {
+    event.target.value = "";
+  }
+});
+
+$("download-format").addEventListener("click", () => {
+  const demo = [{
+    question: "Demo format: नीचे options में B चुनें।",
+    options: ["A", "B", "C", "D"],
+    answerIndex: 1,
+    explanation: "यह केवल format demo है, NEET/PYQ question नहीं।"
+  }];
+
+  downloadFile(
+    "question-bank-format.json",
+    JSON.stringify(demo, null, 2),
+    "application/json"
+  );
+});
+
+$("pdf-file").addEventListener("change", async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    const signature = new Uint8Array(
+      await file.slice(0, 5).arrayBuffer()
+    );
+    const text = String.fromCharCode(...signature);
+    if (text !== "%PDF-") {
+      throw new Error("Valid PDF file चुनें।");
+    }
+
+    if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    pdfUrl = URL.createObjectURL(file);
+
+    $("pdf-name").textContent = file.name;
+    $("pdf-link").href = pdfUrl;
+    $("pdf-link").hidden = false;
+  } catch (error) {
+    notify(error.message);
+  }
+});
+
+$("export-backup").addEventListener("click", () => {
+  const backup = {
+    ...state,
+    notes: $("note-input").value
+  };
+  downloadFile(
+    "neet-study-backup.json",
+    JSON.stringify(backup, null, 2),
+    "application/json"
+  );
+});
+
+$("backup-file").addEventListener("change", async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    const restored = validateState(await readJson(file));
+    if (!confirm(
+      "Current tasks, notes और question bank replace होंगे। Continue?"
+    )) return;
+
+    state = restored;
+    questionIndex = 0;
+    $("note-input").value = state.notes;
+    $("notes-status").textContent = "";
+    const saved = persist();
+    renderTasks();
+    renderQuestion();
+    notify(saved
+      ? "Backup restore और save हो गया।"
+      : "Backup loaded, लेकिन browser में save नहीं हुआ।");
+  } catch (error) {
+    notify("Restore failed: " + error.message);
+  } finally {
+    event.target.value = "";
+  }
+});
+
+renderTasks();
+renderQuestion();
+</script>
+</body>
+</html>
